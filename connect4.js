@@ -7,6 +7,7 @@
 
 let WIDTH = 7;
 let HEIGHT = 6;
+let gameOver = false;
 
 let currPlayer = 1; // active player: 1 or 2
 // ????? why not simply make the board here, rather than create a function to do it later?????
@@ -87,6 +88,7 @@ let placeInTable = (y, x) => {
 /** endGame: announce game end */
 
 let endGame = (msg) => {
+  gameOver = true;
   // TODO: pop up alert message
   alert(msg)
 }
@@ -96,50 +98,46 @@ let endGame = (msg) => {
 let handleClick = (evt) => {
   // couldn't kill event listener on handleClick, so i set the endGame to run at the beginning to 
   // interrupt the rest of the function.
-  if (checkForTie()) {
-    return endGame("the game is over, it's a tie!!")
+  evt.preventDefault()
+  if (!gameOver) {
+
+    // get x from ID of clicked cell
+    let x = +evt.target.id;
+
+    // get next spot in column (if none, ignore click)
+    let y = findSpotForCol(x);
+    if (!y) {
+      return;
+    }
+
+    // ????? from time to time i get the following error:
+    // connect4.js:121 Uncaught TypeError: Cannot set properties of undefined (setting 'NaN')
+    // at HTMLTableRowElement.handleClick (connect4.js:120:15)
+    // ????? particularly if i am clicking fast. how can i prevent this?
+
+    board[y][x] = currPlayer;
+    // place piece in board and add to HTML table
+    // TODO: add line to update in-memory board
+    placeInTable(y, x);
+
+    if (checkForTie()) {
+      return endGame("the game is over, it's a tie!!")
+    }
+    // check for win
+    if (checkForWin()) {
+      return endGame(`Player ${currPlayer} won!`);
+    }
+    // ????? the last piece doesnt show up until after i click the final message, whats a 
+    // ????? good way of avoiding this
+    // check for tie
+    // TODO: check if all cells in board are filled; if so call, call endGame
+
+
+
+    // switch players
+    // TODO: switch currPlayer 1 <-> 2
+    currPlayer = (currPlayer === 1 ? 2 : 1)
   }
-  // check for win
-  if (checkForWin()) {
-    return endGame(`Player ${currPlayer} won!`);
-  }
-
-  // get x from ID of clicked cell
-  let x = +evt.target.id;
-
-  // get next spot in column (if none, ignore click)
-  let y = findSpotForCol(x);
-  if (y === null) {
-    return;
-  }
-
-  // ????? from time to time i get the following error:
-  // connect4.js:121 Uncaught TypeError: Cannot set properties of undefined (setting 'NaN')
-  // at HTMLTableRowElement.handleClick (connect4.js:120:15)
-  // ????? particularly if i am clicking fast. how can i prevent this?
-
-  board[y][x] = currPlayer;
-  // place piece in board and add to HTML table
-  // TODO: add line to update in-memory board
-  placeInTable(y, x);
-
-  if (checkForTie()) {
-    return endGame("the game is over, it's a tie!!")
-  }
-  // check for win
-  if (checkForWin()) {
-    return endGame(`Player ${currPlayer} won!`);
-  }
-  // ????? the last piece doesnt show up until after i click the final message, whats a 
-  // ????? good way of avoiding this
-  // check for tie
-  // TODO: check if all cells in board are filled; if so call, call endGame
-
-
-
-  // switch players
-  // TODO: switch currPlayer 1 <-> 2
-  currPlayer = (currPlayer === 1 ? 2 : 1)
 }
 
 // checkForTie will check if every cell on the board is filled and return True if it is
